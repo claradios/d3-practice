@@ -14,21 +14,54 @@ d3.json("data/buildings.json")
         const svg = d3.select("#chart-area").append("svg")
             .attr("width", 800)
             .attr("height", 800)
+
+        const x = d3.scaleBand()
+            .domain(data.map((d) => { return d.name }))
+            .range([0, 400])
+            .paddingInner(0.3)
+            .paddingOuter(0.3);
+
+        const y = d3.scaleLinear()
+            .domain([0,d3.max(data,(d)=> {return d.height})])
+            .range([0,400])
+
+        const rects = svg.selectAll("rect")
+            .data(data);
         
-        const rectangles = svg.selectAll("rectangles").data(data)
-
-        rectangles.enter()
+            rects
+            .enter()
             .append("rect")
-            .attr("x",(d,i)=> {
-                return(i*50) +100
-            })
-            .attr("y",5)
-            .attr("height",(d)=> {
-                return d.height
-            })
-            .attr("width",30)
+            .attr("y",20)
+            .attr("x",(d)=> {
+                console.log('x',x(d.name))
+                return x(d.name)})
+            .attr("width", x.bandwidth)
+            .attr("height", 
+            (d)=> {
+                console.log('y',y(d.height))
+                return y(d.height)}
+                )
+            .attr("fill", "red")
 
-        // const dataCircles = svg.selectAll("circle")
+        // const rectangles = svg.selectAll("rectangles").data(data)
+
+        // rectangles.enter()
+        //     .append("rect")
+        //     .attr("x",(d,i)=> {
+        //         return(i*50) +100
+        //     })
+        //     .attr("y",5)
+        //     .attr("height",(d)=> {
+        //         return d.height
+        //     })
+        //     .attr("width",30)
+
+    });
+
+
+
+
+            // const dataCircles = svg.selectAll("circle")
         //     .data(data)
 
         // dataCircles.enter()
@@ -42,4 +75,3 @@ d3.json("data/buildings.json")
         //         return d.height /7;
         //     })
         //     .attr("fill", "red")
-    });
