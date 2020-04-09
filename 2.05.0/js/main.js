@@ -1,77 +1,89 @@
 /*
 *    main.js
 *    Mastering Data Visualization with D3.js
-*    2.5 - Activity: Adding SVGs to the screen
+*    3.10 - Axes and labels
 */
 
-d3.json("data/buildings.json")
-    .then((data) => {
+var margin = { left:100, right:10, top:10, bottom:150 };
 
-        data.forEach((d) => {
-            d.height = +d.height;
-        });
+var width = 600 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
 
-        const svg = d3.select("#chart-area").append("svg")
-            .attr("width", 800)
-            .attr("height", 800)
+var g = d3.select("#chart-area")
+    .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+        .attr("transform", "translate(" + margin.left 
+            + ", " + margin.top + ")");
 
-        const x = d3.scaleBand()
-            .domain(data.map((d) => { return d.name }))
-            .range([0, 400])
-            .paddingInner(0.3)
-            .paddingOuter(0.3);
+// X Label
+g.append("text")
+    .attr("class", "x axis-label")
+    .attr("x", width / 2)
+    .attr("y", height + 140)
+    .attr("font-size", "20px")
+    .attr("text-anchor", "middle")
+    .text("The word's tallest buildings");
 
-        const y = d3.scaleLinear()
-            .domain([0,d3.max(data,(d)=> {return d.height})])
-            .range([0,400])
+// Y Label
+g.append("text")
+    .attr("class", "y axis-label")
+    .attr("x", - (height / 2))
+    .attr("y", -60)
+    .attr("font-size", "20px")
+    .attr("text-anchor", "middle")
+    .attr("transform", "rotate(-90)")
+    .text("Height (m)");
 
-        const rects = svg.selectAll("rect")
-            .data(data);
-        
-            rects
-            .enter()
-            .append("rect")
-            .attr("y",20)
-            .attr("x",(d)=> {
-                console.log('x',x(d.name))
-                return x(d.name)})
-            .attr("width", x.bandwidth)
-            .attr("height", 
-            (d)=> {
-                console.log('y',y(d.height))
-                return y(d.height)}
-                )
-            .attr("fill", "red")
+d3.json("data/buildings.json").then(function(data){
+    console.log(data);
 
-        // const rectangles = svg.selectAll("rectangles").data(data)
-
-        // rectangles.enter()
-        //     .append("rect")
-        //     .attr("x",(d,i)=> {
-        //         return(i*50) +100
-        //     })
-        //     .attr("y",5)
-        //     .attr("height",(d)=> {
-        //         return d.height
-        //     })
-        //     .attr("width",30)
-
+    data.forEach(function(d){
+        d.height = +d.height;
     });
 
+    var x = d3.scaleBand()
+        .domain(data.map(function(d){ return d.name; }))
+        .range([0, width])
+        .paddingInner(0.3)
+        .paddingOuter(0.3);
 
+    var y = d3.scaleLinear()
+        .domain([0, d3.max(data, function(d){
+            return d.height;
+        })])
+        .range([0, height]);
 
+    var xAxisCall = d3.axisBottom(x);
+    g.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0, " + height + ")")
+        .call(xAxisCall)
+    .selectAll("text")
+        .attr("y", "10")
+        .attr("x", "-5")
+        .attr("text-anchor", "end")
+        .attr("transform", "rotate(-40)");
 
-            // const dataCircles = svg.selectAll("circle")
-        //     .data(data)
+    var yAxisCall = d3.axisLeft(y)
+        .ticks(3)
+        .tickFormat(function(d){
+            return d + "m";
+        });
+    g.append("g")
+        .attr("class", "y-axis")
+        .call(yAxisCall);
 
-        // dataCircles.enter()
-        //     .append("circle")
-        //     .attr("cx", (d, i) => {
-        //         return (i * 100) + 200;
-        //     })
-        //     .attr("cy", 200)
-        //     .attr("r", (d) => {
-        //         console.log(d.name)
-        //         return d.height /7;
-        //     })
-        //     .attr("fill", "red")
+    var rects = g.selectAll("rect")
+        .data(data)
+    
+    rects.enter()
+        .append("rect")
+            .attr("y", 0)
+            .attr("x", function(d){ return x(d.name); })
+            .attr("width", x.bandwidth)
+            .attr("height", function(d){ return y(d.height); })
+            .attr("fill", "grey");
+
+})
